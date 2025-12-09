@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Theory Simulation | INSEAD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* INSEAD Brand Colors */
+            --insead-green: #00563F;
+            --insead-green-light: #007A5E;
+            --insead-green-dark: #003D2D;
+            --insead-accent: #C5A572;
+            --insead-gold: #B8975A;
+            
+            /* Semantic Colors */
+            --bg-primary: #FAFBF7;
+            --bg-secondary: #F5F7F2;
+            --bg-card: #FFFFFF;
+            --text-primary: #1A2E1A;
+            --text-secondary: #4A5D4A;
+            --text-muted: #7A8A7A;
+            --border-color: #D8E3D8;
+            --shadow-sm: 0 2px 8px rgba(0, 86, 63, 0.06);
+            --shadow-md: 0 4px 16px rgba(0, 86, 63, 0.08);
+            --shadow-lg: 0 8px 32px rgba(0, 86, 63, 0.12);
+            
+            /* Agent Colors */
+            --agent-am: #2563EB;
+            --agent-mc: #DC2626;
+            --agent-am-bg: #EFF6FF;
+            --agent-mc-bg: #FEF2F2;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+            animation: fadeInDown 0.8s ease-out;
+        }
+        
+        .insead-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--insead-green);
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        
+        .header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            font-weight: 300;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .header .subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+        
+        .header-divider {
+            width: 120px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--insead-accent), transparent);
+            margin: 1.5rem auto;
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        
+        /* Control Panel */
+        .control-panel {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .panel-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--insead-green);
+        }
+        
+        .status-badge {
+            padding: 0.5rem 1.25rem;
+            border-radius: 24px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-badge.ready {
+            background: linear-gradient(135deg, #ECFDF5, #D1FAE5);
+            color: #065F46;
+            border: 1px solid #6EE7B7;
+        }
+        
+        .status-badge.running {
+            background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+            color: #92400E;
+            border: 1px solid #FCD34D;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .status-badge.paused {
+            background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+            color: #1E40AF;
+            border: 1px solid #93C5FD;
+        }
+        
+        .status-badge.complete {
+            background: linear-gradient(135deg, var(--insead-green-light), var(--insead-green));
+            color: white;
+            border: 1px solid var(--insead-green-dark);
+        }
+
+        /* Information Mode Toggle */
+        .info-mode-section {
+            background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
+            border: 2px solid #86EFAC;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-mode-header {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--insead-green);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .info-mode-toggle {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .mode-option {
+            flex: 1;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 3px solid transparent;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .mode-option:hover {
+            border-color: var(--insead-accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .mode-option.active {
+            border-color: var(--insead-green);
+            background: linear-gradient(135deg, #ECFDF5, white);
+            box-shadow: 0 0 0 4px rgba(0, 86, 63, 0.1);
+        }
+
+        .mode-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .mode-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .mode-description {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Agent Configuration Grid */
+        .agents-config {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .agent-config-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 2px solid var(--border-color);
+        }
+
+        .agent-config-card.am {
+            border-left: 4px solid var(--agent-am);
+        }
+
+        .agent-config-card.mc {
+            border-left: 4px solid var(--agent-mc);
+        }
+
+        .agent-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .agent-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .agent-icon.am {
+            background: var(--agent-am);
+        }
+
+        .agent-icon.mc {
+            background: var(--agent-mc);
+        }
+
+        .agent-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .control-group {
+            margin-bottom: 1rem;
+        }
+
+        .control-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .control-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--bg-primary);
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: var(--insead-green);
+            box-shadow: 0 0 0 3px rgba(0, 86, 63, 0.1);
+        }
+
+        /* Game Configuration */
+        .game-config {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Button Group */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--insead-green-light), var(--insead-green));
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 86, 63, 0.3);
+            flex: 1;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 86, 63, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--insead-green);
+            border: 2px solid var(--insead-green);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--insead-green);
+            color: white;
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Progress Section */
+        .progress-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .round-display {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--insead-green);
+        }
+
+        .progress-bar-container {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            height: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--insead-green-light), var(--insead-green));
+            transition: width 0.5s ease;
+            border-radius: 8px;
+        }
+
+        /* Main Grid: Agent Panels + Chats */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Agent Reasoning Panel */
+        .agent-panel {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            animation: fadeInUp 0.8s ease-out 0.4s backwards;
+        }
+
+        .agent-panel.am {
+            border-top: 4px solid var(--agent-am);
+        }
+
+        .agent-panel.mc {
+            border-top: 4px solid var(--agent-mc);
+        }
+
+        .agent-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .agent-panel-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .agent-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-value.am {
+            color: var(--agent-am);
+        }
+
+        .stat-value.mc {
+            color: var(--agent-mc);
+        }
+
+        /* Reasoning Display */
+        .reasoning-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .reasoning-empty {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        .reasoning-step {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid var(--insead-accent);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .reasoning-step.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reasoning-step.decision {
+            border-left-color: var(--insead-green);
+            background: linear-gradient(135deg, #ECFDF5, white);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-icon {
+            font-size: 1.25rem;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .step-content {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-left: 2rem;
+        }
+
+        /* Chat Panel - SEPARATED */
+        .chat-panel {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            animation: fadeInUp 0.8s ease-out 0.6s backwards;
+        }
+
+        .chat-panel.am {
+            border-top: 4px solid var(--agent-am);
+        }
+
+        .chat-panel.mc {
+            border-top: 4px solid var(--agent-mc);
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .chat-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .chat-help {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1rem;
+            scroll-behavior: smooth;
+        }
+
+        .chat-message {
+            margin-bottom: 1rem;
+            animation: messageSlideIn 0.3s ease-out;
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .message-sender.user {
+            color: var(--insead-green);
+        }
+
+        .message-sender.agent {
+            color: var(--text-primary);
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .message-content {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .message-content.user {
+            background: linear-gradient(135deg, #ECFDF5, #D1FAE5);
+            border-left: 3px solid var(--insead-green);
+        }
+
+        .message-content.agent.am {
+            background: var(--agent-am-bg);
+            border-left: 3px solid var(--agent-am);
+            margin-left: 1rem;
+        }
+
+        .message-content.agent.mc {
+            background: var(--agent-mc-bg);
+            border-left: 3px solid var(--agent-mc);
+            margin-left: 1rem;
+        }
+
+        .chat-empty {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: none;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--insead-green);
+            box-shadow: 0 0 0 3px rgba(0, 86, 63, 0.1);
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .btn-send {
+            padding: 0.75rem 1.5rem;
+            background: var(--insead-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-send:hover:not(:disabled) {
+            background: var(--insead-green-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 86, 63, 0.2);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* History Table */
+        .history-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            animation: fadeInUp 0.8s ease-out 0.8s backwards;
+        }
+
+        .history-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--insead-green);
+            margin-bottom: 1.5rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--insead-green);
+            color: white;
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.85rem;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        td {
+            padding: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .table-empty {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        /* Summary Panel */
+        .summary-panel {
+            display: none;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 2px solid var(--insead-accent);
+        }
+
+        .summary-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .summary-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--insead-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-stat-card {
+            background: linear-gradient(135deg, var(--bg-primary), white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            text-align: center;
+        }
+
+        .summary-stat-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--insead-green);
+        }
+
+        .summary-analysis {
+            background: var(--bg-primary);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .analysis-section {
+            margin-bottom: 2rem;
+        }
+
+        .analysis-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .analysis-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--insead-green);
+            margin-bottom: 0.75rem;
+        }
+
+        .analysis-content {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--insead-accent);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--insead-gold);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .agents-config {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="insead-logo">INSEAD</div>
+        <h1>Autonomous Vehicle Alliance Game</h1>
+        <div class="header-divider"></div>
+        <p class="subtitle">Two-Agent Strategic Simulation with Interactive Learning</p>
+    </div>
+
+    <div class="container">
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Game Configuration</h2>
+                <div class="status-badge ready" id="statusBadge">Ready</div>
+            </div>
+
+            <!-- Information Mode Toggle -->
+            <div class="info-mode-section">
+                <div class="info-mode-header">📊 Information Visibility Mode</div>
+                <div class="info-mode-toggle">
+                    <div class="mode-option active" data-mode="full" onclick="selectMode('full')">
+                        <div class="mode-icon">👁️</div>
+                        <div class="mode-title">Full Information</div>
+                        <div class="mode-description">Both agents can see each other's payoff matrices. Enables explicit cooperation and strategic analysis.</div>
+                    </div>
+                    <div class="mode-option" data-mode="hidden" onclick="selectMode('hidden')">
+                        <div class="mode-icon">🔒</div>
+                        <div class="mode-title">Hidden Information</div>
+                        <div class="mode-description">Agents only see their own payoffs. Must infer partner's incentives from behavior patterns.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agent Configuration -->
+            <div class="agents-config">
+                <!-- Agent AM Configuration -->
+                <div class="agent-config-card am">
+                    <div class="agent-card-header">
+                        <div class="agent-icon am">AM</div>
+                        <div class="agent-name">Autonomous Motors</div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Persona Strategy</label>
+                        <select id="amStrategy" class="control-input">
+                            <option value="cooperative">Cooperative - Builds trust, values partnership</option>
+                            <option value="competitive">Competitive - Maximizes own returns</option>
+                            <option value="balanced" selected>Balanced - Mix of self-interest and cooperation</option>
+                            <option value="adaptive">Adaptive - Learns and mirrors partner behavior</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Agent MC Configuration -->
+                <div class="agent-config-card mc">
+                    <div class="agent-card-header">
+                        <div class="agent-icon mc">MC</div>
+                        <div class="agent-name">Motherboard Chips</div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Persona Strategy</label>
+                        <select id="mcStrategy" class="control-input">
+                            <option value="cooperative">Cooperative - Builds trust, values partnership</option>
+                            <option value="competitive">Competitive - Maximizes own returns</option>
+                            <option value="balanced" selected>Balanced - Mix of self-interest and cooperation</option>
+                            <option value="adaptive">Adaptive - Learns and mirrors partner behavior</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Settings -->
+            <div class="game-config">
+                <div class="control-group">
+                    <label class="control-label">Number of Rounds</label>
+                    <select id="numRounds" class="control-input">
+                        <option value="3">3 Rounds (Quick Demo)</option>
+                        <option value="5">5 Rounds</option>
+                        <option value="10" selected>10 Rounds (Full Game)</option>
+                        <option value="15">15 Rounds (Extended)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Control Buttons -->
+            <div class="button-group">
+                <button class="btn btn-primary" id="startBtn" onclick="startSimulation()">
+                    <span id="startBtnText">▶ Start Simulation</span>
+                </button>
+                <button class="btn btn-secondary" id="continueBtn" onclick="continueSimulation()" disabled style="display: none;">
+                    ▶ Continue to Next Round
+                </button>
+                <button class="btn btn-secondary" onclick="resetSimulation()">
+                    🔄 Reset
+                </button>
+                <button class="btn btn-secondary" id="exportBtn" onclick="exportResults()" disabled>
+                    📥 Export Results
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <div class="progress-header">
+                <div class="round-display" id="roundDisplay">Round 0 / 10</div>
+                <div class="status-badge ready" id="progressStatus">Waiting to start</div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Main Grid: Agent Panels -->
+        <div class="main-grid">
+            <!-- Agent AM Panel -->
+            <div class="agent-panel am">
+                <div class="agent-panel-header">
+                    <div class="agent-icon am">AM</div>
+                    <div class="agent-panel-title">Autonomous Motors</div>
+                </div>
+
+                <div class="agent-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Current Investment</div>
+                        <div class="stat-value am" id="amCurrentInvestment">--</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Round Payoff</div>
+                        <div class="stat-value am" id="amRoundPayoff">$0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Total Payoff</div>
+                        <div class="stat-value am" id="amTotalPayoff">$0</div>
+                    </div>
+                </div>
+
+                <div class="reasoning-container" id="amReasoningSteps">
+                    <div class="reasoning-empty">Waiting for simulation to begin...</div>
+                </div>
+            </div>
+
+            <!-- Agent MC Panel -->
+            <div class="agent-panel mc">
+                <div class="agent-panel-header">
+                    <div class="agent-icon mc">MC</div>
+                    <div class="agent-panel-title">Motherboard Chips</div>
+                </div>
+
+                <div class="agent-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Current Investment</div>
+                        <div class="stat-value mc" id="mcCurrentInvestment">--</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Round Payoff</div>
+                        <div class="stat-value mc" id="mcRoundPayoff">$0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Total Payoff</div>
+                        <div class="stat-value mc" id="mcTotalPayoff">$0</div>
+                    </div>
+                </div>
+
+                <div class="reasoning-container" id="mcReasoningSteps">
+                    <div class="reasoning-empty">Waiting for simulation to begin...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Separate Chat Panels -->
+        <div class="main-grid">
+            <!-- Chat with Agent AM -->
+            <div class="chat-panel am">
+                <div class="chat-header">
+                    <div class="agent-icon am">AM</div>
+                    <div class="chat-title">Chat with AM</div>
+                </div>
+
+                <div class="chat-messages" id="chatMessagesAM">
+                    <div class="chat-empty">Start the simulation to interact with Agent AM</div>
+                </div>
+
+                <div class="chat-input-area">
+                    <textarea 
+                        id="chatInputAM" 
+                        class="chat-input" 
+                        placeholder="Ask AM a question or give a command..." 
+                        rows="2"
+                        onkeydown="handleChatKeydown(event, 'am')"
+                    ></textarea>
+                    <button class="btn-send" id="sendBtnAM" onclick="sendMessage('am')">Send</button>
+                </div>
+            </div>
+
+            <!-- Chat with Agent MC -->
+            <div class="chat-panel mc">
+                <div class="chat-header">
+                    <div class="agent-icon mc">MC</div>
+                    <div class="chat-title">Chat with MC</div>
+                </div>
+
+                <div class="chat-messages" id="chatMessagesMC">
+                    <div class="chat-empty">Start the simulation to interact with Agent MC</div>
+                </div>
+
+                <div class="chat-input-area">
+                    <textarea 
+                        id="chatInputMC" 
+                        class="chat-input" 
+                        placeholder="Ask MC a question or give a command..." 
+                        rows="2"
+                        onkeydown="handleChatKeydown(event, 'mc')"
+                    ></textarea>
+                    <button class="btn-send" id="sendBtnMC" onclick="sendMessage('mc')">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="history-section">
+            <h2 class="history-title">Game History</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Round</th>
+                            <th>AM Investment</th>
+                            <th>MC Investment</th>
+                            <th>AM Payoff</th>
+                            <th>MC Payoff</th>
+                            <th>Total Welfare</th>
+                            <th>Outcome Type</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr>
+                            <td colspan="7" class="table-empty">No data yet. Start the simulation to see results.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Summary Panel -->
+        <div class="summary-panel" id="summaryPanel">
+            <div class="summary-header">
+                <h2 class="summary-title">📊 Game Analysis</h2>
+                <p class="summary-subtitle">Final Results and Strategic Insights</p>
+            </div>
+
+            <div class="summary-stats">
+                <div class="summary-stat-card">
+                    <div class="summary-stat-label">Total Rounds</div>
+                    <div class="summary-stat-value" id="summaryRounds">0</div>
+                </div>
+                <div class="summary-stat-card">
+                    <div class="summary-stat-label">AM Total Payoff</div>
+                    <div class="summary-stat-value" id="summaryAMPayoff">$0</div>
+                </div>
+                <div class="summary-stat-card">
+                    <div class="summary-stat-label">MC Total Payoff</div>
+                    <div class="summary-stat-value" id="summaryMCPayoff">$0</div>
+                </div>
+                <div class="summary-stat-card">
+                    <div class="summary-stat-label">Total Welfare</div>
+                    <div class="summary-stat-value" id="summaryTotalWelfare">$0</div>
+                </div>
+            </div>
+
+            <div class="summary-analysis">
+                <div class="analysis-section">
+                    <h3 class="analysis-title">Equilibrium Analysis</h3>
+                    <p class="analysis-content" id="equilibriumAnalysis">Analysis will appear here after simulation completes.</p>
+                </div>
+                <div class="analysis-section">
+                    <h3 class="analysis-title">Efficiency Analysis</h3>
+                    <p class="analysis-content" id="efficiencyAnalysis">Analysis will appear here after simulation completes.</p>
+                </div>
+                <div class="analysis-section">
+                    <h3 class="analysis-title">Strategic Insights</h3>
+                    <p class="analysis-content" id="strategicInsights">Analysis will appear here after simulation completes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            round: 0,
+            maxRounds: 10,
+            isRunning: false,
+            isPaused: false,
+            informationMode: 'full',
+            history: [],
+            amTotal: 0,
+            mcTotal: 0
+        };
+
+        // DOM Elements
+        const elements = {
+            statusBadge: document.getElementById('statusBadge'),
+            progressStatus: document.getElementById('progressStatus'),
+            roundDisplay: document.getElementById('roundDisplay'),
+            progressBar: document.getElementById('progressBar'),
+            amStrategy: document.getElementById('amStrategy'),
+            mcStrategy: document.getElementById('mcStrategy'),
+            numRounds: document.getElementById('numRounds'),
+            startBtn: document.getElementById('startBtn'),
+            continueBtn: document.getElementById('continueBtn'),
+            exportBtn: document.getElementById('exportBtn'),
+            startBtnText: document.getElementById('startBtnText'),
+            amCurrentInvestment: document.getElementById('amCurrentInvestment'),
+            amRoundPayoff: document.getElementById('amRoundPayoff'),
+            amTotalPayoff: document.getElementById('amTotalPayoff'),
+            mcCurrentInvestment: document.getElementById('mcCurrentInvestment'),
+            mcRoundPayoff: document.getElementById('mcRoundPayoff'),
+            mcTotalPayoff: document.getElementById('mcTotalPayoff'),
+            amReasoningSteps: document.getElementById('amReasoningSteps'),
+            mcReasoningSteps: document.getElementById('mcReasoningSteps'),
+            chatMessagesAM: document.getElementById('chatMessagesAM'),
+            chatMessagesMC: document.getElementById('chatMessagesMC'),
+            chatInputAM: document.getElementById('chatInputAM'),
+            chatInputMC: document.getElementById('chatInputMC'),
+            sendBtnAM: document.getElementById('sendBtnAM'),
+            sendBtnMC: document.getElementById('sendBtnMC'),
+            historyTableBody: document.getElementById('historyTableBody'),
+            summaryPanel: document.getElementById('summaryPanel')
+        };
+
+        // Information Mode Selection
+        function selectMode(mode) {
+            document.querySelectorAll('.mode-option').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+            gameState.informationMode = mode;
+        }
+
+        // Chat Functions
+        function addChatMessage(agent, sender, content, time = null) {
+            const messagesContainer = agent === 'am' ? elements.chatMessagesAM : elements.chatMessagesMC;
+            
+            // Remove empty state if present
+            const emptyState = messagesContainer.querySelector('.chat-empty');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message';
+            
+            const timestamp = time || new Date().toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            let senderDisplay = sender === 'user' ? 'You' : agent.toUpperCase();
+            let senderClass = sender === 'user' ? 'user' : 'agent';
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <span class="message-sender ${senderClass}">${senderDisplay}</span>
+                    <span class="message-time">${timestamp}</span>
+                </div>
+                <div class="message-content ${senderClass} ${agent}">${content}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function sendMessage(agent) {
+            const input = agent === 'am' ? elements.chatInputAM : elements.chatInputMC;
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addChatMessage(agent, 'user', message);
+            
+            // Clear input
+            input.value = '';
+            
+            // TODO: Send to backend and get agent response
+            // This is where you'll integrate with OpenAI API
+        }
+
+        function handleChatKeydown(event, agent) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage(agent);
+            }
+        }
+
+        // Start Simulation
+        function startSimulation() {
+            if (gameState.isRunning) return;
+            
+            // Reset state
+            gameState.round = 0;
+            gameState.maxRounds = parseInt(elements.numRounds.value);
+            gameState.isRunning = true;
+            gameState.isPaused = false;
+            gameState.history = [];
+            gameState.amTotal = 0;
+            gameState.mcTotal = 0;
+            
+            // Update UI
+            updateStatus('running');
+            elements.progressStatus.textContent = 'Running...';
+            elements.startBtn.disabled = true;
+            elements.exportBtn.disabled = true;
+            elements.summaryPanel.style.display = 'none';
+            
+            // Clear displays
+            elements.amReasoningSteps.innerHTML = '<div class="reasoning-empty">Waiting for round to begin...</div>';
+            elements.mcReasoningSteps.innerHTML = '<div class="reasoning-empty">Waiting for round to begin...</div>';
+            elements.historyTableBody.innerHTML = '<tr><td colspan="7" class="table-empty">Running simulation...</td></tr>';
+            
+            // Start first round
+            // TODO: Call backend to start simulation
+            runRound();
+        }
+
+        // Run Single Round (placeholder for backend integration)
+        function runRound() {
+            if (!gameState.isRunning) return;
+            
+            gameState.round++;
+            updateRoundDisplay();
+            updateProgressBar();
+            
+            // TODO: Call backend to execute round
+            // Backend should return:
+            // - AM decision + reasoning
+            // - MC decision + reasoning  
+            // - Payoffs for both
+            
+            // For now, just pause for user interaction
+            pauseForInteraction();
+        }
+
+        function pauseForInteraction() {
+            gameState.isPaused = true;
+            updateStatus('paused');
+            elements.progressStatus.textContent = 'Paused - Interact with agents';
+            elements.continueBtn.disabled = false;
+            elements.continueBtn.style.display = 'inline-block';
+        }
+
+        function continueSimulation() {
+            if (!gameState.isPaused) return;
+            
+            gameState.isPaused = false;
+            updateStatus('running');
+            elements.progressStatus.textContent = 'Running...';
+            elements.continueBtn.disabled = true;
+            elements.continueBtn.style.display = 'none';
+            
+            // Check if game is complete
+            if (gameState.round >= gameState.maxRounds) {
+                completeSimulation();
+            } else {
+                runRound();
+            }
+        }
+
+        function completeSimulation() {
+            gameState.isRunning = false;
+            gameState.isPaused = false;
+            updateStatus('complete');
+            elements.progressStatus.textContent = 'Complete';
+            
+            elements.startBtn.disabled = false;
+            elements.continueBtn.disabled = true;
+            elements.continueBtn.style.display = 'none';
+            elements.exportBtn.disabled = false;
+            elements.startBtnText.textContent = '▶ Start New Simulation';
+            
+            showSummary();
+        }
+
+        function resetSimulation() {
+            gameState = {
+                round: 0,
+                maxRounds: parseInt(elements.numRounds.value),
+                isRunning: false,
+                isPaused: false,
+                informationMode: document.querySelector('.mode-option.active').dataset.mode,
+                history: [],
+                amTotal: 0,
+                mcTotal: 0
+            };
+            
+            updateStatus('ready');
+            elements.progressStatus.textContent = 'Waiting to start';
+            updateRoundDisplay();
+            updateProgressBar();
+            
+            elements.startBtn.disabled = false;
+            elements.continueBtn.disabled = true;
+            elements.continueBtn.style.display = 'none';
+            elements.exportBtn.disabled = true;
+            elements.startBtnText.textContent = '▶ Start Simulation';
+            
+            // Clear displays
+            elements.amCurrentInvestment.textContent = '--';
+            elements.amRoundPayoff.textContent = '$0';
+            elements.amTotalPayoff.textContent = '$0';
+            elements.mcCurrentInvestment.textContent = '--';
+            elements.mcRoundPayoff.textContent = '$0';
+            elements.mcTotalPayoff.textContent = '$0';
+            
+            elements.amReasoningSteps.innerHTML = '<div class="reasoning-empty">Waiting for simulation to begin...</div>';
+            elements.mcReasoningSteps.innerHTML = '<div class="reasoning-empty">Waiting for simulation to begin...</div>';
+            
+            elements.historyTableBody.innerHTML = '<tr><td colspan="7" class="table-empty">No data yet. Start the simulation to see results.</td></tr>';
+            
+            elements.chatMessagesAM.innerHTML = '<div class="chat-empty">Start the simulation to interact with Agent AM</div>';
+            elements.chatMessagesMC.innerHTML = '<div class="chat-empty">Start the simulation to interact with Agent MC</div>';
+            
+            elements.summaryPanel.style.display = 'none';
+        }
+
+        function addReasoningStep(agent, step) {
+            const container = agent === 'am' ? elements.amReasoningSteps : elements.mcReasoningSteps;
+            
+            // Remove empty state if present
+            const emptyState = container.querySelector('.reasoning-empty');
+            if (emptyState) {
+                emptyState.remove();
+            }
+            
+            const stepElement = document.createElement('div');
+            stepElement.className = 'reasoning-step';
+            if (step.isDecision) {
+                stepElement.classList.add('decision');
+            }
+            
+            stepElement.innerHTML = `
+                <div class="step-header">
+                    <div class="step-icon">${step.icon || '💭'}</div>
+                    <div class="step-title">${step.title}</div>
+                </div>
+                <div class="step-content">${step.content}</div>
+            `;
+            
+            container.appendChild(stepElement);
+            
+            // Trigger animation
+            setTimeout(() => stepElement.classList.add('visible'), 10);
+            
+            // Auto-scroll
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function updateHistoryTable(outcome) {
+            if (gameState.history.length === 1) {
+                elements.historyTableBody.innerHTML = '';
+            }
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>Round ${outcome.round}</strong></td>
+                <td>${outcome.amInvest} engineers</td>
+                <td>${outcome.mcInvest} engineers</td>
+                <td>$${outcome.amPayoff}</td>
+                <td>$${outcome.mcPayoff}</td>
+                <td><strong>$${outcome.totalWelfare}</strong></td>
+                <td>${classifyOutcome(outcome)}</td>
+            `;
+            elements.historyTableBody.appendChild(row);
+        }
+
+        function classifyOutcome(outcome) {
+            const total = outcome.totalWelfare;
+            if (total > 600) return '✅ Highly Cooperative';
+            if (total > 400) return '⚖️ Moderate Cooperation';
+            if (total > 200) return '⚠️ Low Cooperation';
+            return '❌ Minimal Cooperation';
+        }
+
+        function showSummary() {
+            elements.summaryPanel.style.display = 'block';
+            
+            document.getElementById('summaryRounds').textContent = gameState.maxRounds;
+            document.getElementById('summaryAMPayoff').textContent = '$' + gameState.amTotal;
+            document.getElementById('summaryMCPayoff').textContent = '$' + gameState.mcTotal;
+            document.getElementById('summaryTotalWelfare').textContent = '$' + (gameState.amTotal + gameState.mcTotal);
+            
+            // TODO: Get analysis from backend
+            
+            // Scroll to summary
+            elements.summaryPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function exportResults() {
+            const exportData = {
+                metadata: {
+                    informationMode: gameState.informationMode,
+                    totalRounds: gameState.maxRounds,
+                    amStrategy: elements.amStrategy.value,
+                    mcStrategy: elements.mcStrategy.value,
+                    timestamp: new Date().toISOString()
+                },
+                summary: {
+                    amTotalPayoff: gameState.amTotal,
+                    mcTotalPayoff: gameState.mcTotal,
+                    totalWelfare: gameState.amTotal + gameState.mcTotal,
+                    averageWelfarePerRound: ((gameState.amTotal + gameState.mcTotal) / gameState.maxRounds).toFixed(2)
+                },
+                rounds: gameState.history
+            };
+            
+            const jsonBlob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const jsonUrl = URL.createObjectURL(jsonBlob);
+            
+            const a = document.createElement('a');
+            a.href = jsonUrl;
+            a.download = 'simulation_results_' + new Date().toISOString().slice(0,10) + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(jsonUrl);
+        }
+
+        function updateStatus(status) {
+            const badge = elements.statusBadge;
+            badge.className = 'status-badge ' + status;
+            
+            switch(status) {
+                case 'ready':
+                    badge.textContent = 'Ready';
+                    break;
+                case 'running':
+                    badge.textContent = 'Running';
+                    break;
+                case 'paused':
+                    badge.textContent = 'Paused';
+                    break;
+                case 'complete':
+                    badge.textContent = 'Complete';
+                    break;
+            }
+        }
+
+        function updateRoundDisplay() {
+            elements.roundDisplay.textContent = `Round ${gameState.round} / ${gameState.maxRounds}`;
+        }
+
+        function updateProgressBar() {
+            const progress = (gameState.round / gameState.maxRounds) * 100;
+            elements.progressBar.style.width = progress + '%';
+        }
+
+        // Initialize
+        updateRoundDisplay();
+        updateProgressBar();
+    </script>
+</body>
+</html>
