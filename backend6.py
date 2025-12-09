@@ -1,3 +1,6 @@
+from flask_cors import CORS
+CORS(app)
+
 #!/usr/bin/env python3
 """
 Backend 6.0 - The Final "Production" Version
@@ -7,8 +10,7 @@ Combines:
 3. Persona-Driven Logic (Cooperative/Competitive/etc)
 4. Structured Reasoning for Frontend UI
 """
-
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import json
 import openai
@@ -271,9 +273,6 @@ def compute_payoff(am_inv, mc_inv):
 # Routes
 # ============================================================================
 
-@app.route('/')
-def index():
-    return send_from_directory('.', 'game_theory_simulation_final.html')
 
 @app.route('/start_simulation', methods=['POST'])
 def start_simulation():
